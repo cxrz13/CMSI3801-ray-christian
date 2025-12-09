@@ -4,6 +4,7 @@ import (
     "log"
 	"sync"
     "sync/atomic"
+	"math/rand"
     "time"
 )
 
@@ -17,6 +18,12 @@ type Order struct {
 }
 
 var nextOrderID atomic.Uint64
+
+func do(seconds int, action ...any) {
+    log.Println(action...)
+    randomMillis := 500 * seconds + rand.Intn(500 * seconds)
+    time.Sleep(time.Duration(randomMillis) * time.Millisecond)
+}
 
 func newOrder(customer string) *Order {
     id := nextOrderID.Add(1) 
@@ -44,6 +51,33 @@ func cook(name string) {
         order.Reply <- order
     }
 }
+
+func customer(name string, wg *sync.WaitGroup) {
+    defer wg.Done()
+
+    for mealsEaten := 0; mealsEaten < 5; {
+        order := newOrder(name)
+        log.Println(name, "placed order", order.ID)
+
+        select {
+        case waiter <- order:
+            meal := <-order.Reply
+
+            do(2,
+                "eating cooked order",
+            )
+            mealsEaten++
+
+        case <-time.After(7 * time.Second):
+            do(5,
+                "waiting too long, abandoning order",
+            )
+        }
+    }
+
+    log.Println(name, "going home")
+}
+
 
 func main() {
     customers := []string{
