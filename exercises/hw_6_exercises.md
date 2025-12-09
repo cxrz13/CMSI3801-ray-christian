@@ -31,6 +31,9 @@ unbuffered chain:
         ch <- 42
     }
 
+6. In Go, a Mutex only allows for a shared memory to be read/written one at a time. A RWMutex allows for multiple reads to happen at once and prevents reads when a write is in progress. 
+Since multiple reads can now happen at once with the RWMutex, it is the prefered when multiple reads need to happen,  and with read-heavy operations which improves performance.
+
 7. Trying to send on a closed channel will result in the program crashing with a panic. For reading, if there's values in the buffer you will recieve them as normal. once its empty you will get the zero value, 0, "", nil.
 
 8. switch is for values while the select statement is for channels. The default case, if there is one, runs right away if there are no channels ready. If there's multiple ready then Go picks one at random.
